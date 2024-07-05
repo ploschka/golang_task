@@ -1,0 +1,260 @@
+openapi: 3.0.3
+info:
+  title: People info
+  version: 0.0.1
+paths:
+  /info:
+    get:
+      parameters:
+        - name: passportSerie
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: passportNumber
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/People'
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+    post:
+      requestBody:
+        $ref: "#/components/requestBodies/Passport"
+      responses:
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal server error
+        '200':
+          description: OK
+    put:
+      requestBody:
+        $ref: "#/components/requestBodies/PeopleWithNumber"
+      responses:
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal server error
+        '200':
+          description: OK
+    delete:
+      parameters:
+        - name: passSerie
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 1234
+        - name: passNum
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 567890
+      responses:
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal server error
+        '200':
+          description: OK
+  /info/list:
+    get:
+      parameters:
+        - name: surname
+          in: query
+          required: false
+          schema:
+            type: string
+            example: Иванов
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+            example: Иван
+        - name: patronymic
+          in: query
+          required: false
+          schema:
+            type: string
+            example: Иванович
+        - name: address
+          in: query
+          required: false
+          schema:
+            type: string
+            example: "г. Москва, ул. Ленина, д. 5, кв. 1"
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 1
+            minimum: 1
+        - name: len
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 1
+            minimum: 1      
+      responses:
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal server error
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PeopleArr"
+  /time/start:
+    post:
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 1
+            minimum: 0
+        - name: task_id
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 1
+            minimum: 0
+      responses:
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal server error
+        '200':
+          description: OK
+  /time/end:
+    post:
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 1
+            minimum: 0
+        - name: task_id
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 1
+            minimum: 0
+      responses:
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal server error
+        '200':
+          description: OK
+  /time:
+    get:
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 1
+            minimum: 0
+      responses:
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal server error
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserTime"
+components:
+  schemas:
+    PassportSerie:
+      type: object
+      required:
+        - passportNumber
+      properties:
+        passportNumber:
+          type: string
+          example: "1234 567890"
+    People:
+      required:
+        - surname
+        - name
+        - address
+      type: object
+      properties:
+        surname:
+          type: string
+          example: Иванов
+        name:
+          type: string
+          example: Иван
+        patronymic:
+          type: string
+          example: Иванович
+        address:
+          type: string
+          example: "г. Москва, ул. Ленина, д. 5, кв. 1"
+    PeopleWithNumber:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/People"
+      required:
+        - passSerie
+        - passNumber
+      properties:
+        passSerie:
+          type: integer
+          example: 1234
+        passNum:
+          type: integer
+          example: 567890
+    PeopleArr:
+      type: array
+      items:
+        $ref: "#/components/schemas/PeopleWithNumber"
+    UserTime:
+      type: object
+      properties:
+        hours:
+          type: integer
+          example: 5
+          minimum: 0
+        minutes:
+          type: integer
+          example: 10
+          minimum: 0    
+  requestBodies:
+    Passport:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PassportSerie"
+    PeopleWithNumber:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PeopleWithNumber"
