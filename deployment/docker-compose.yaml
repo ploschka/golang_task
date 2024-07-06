@@ -6,14 +6,14 @@ services:
     build:
       context: ../
       dockerfile: build/app.Dockerfile
-    image: thunderlight-app:latest
+    image: golang_task-app:latest
     container_name: app
     environment:
-      - DATABASE_LINK=${POSTGRES_USER}:${POSTGRES_PASSWORD}@tcp(database:5432)/${POSTGRES_DB}?charset=utf8&parseTime=True&loc=Local
+      - DATABASE_LINK=host=database user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} dbname=${POSTGRES_DB} port=5432 sslmode=disable
     networks:
       - app-network
     ports:
-      - 5174:88
+      - 88:88
     depends_on:
       database:
         condition: service_healthy
@@ -25,7 +25,6 @@ services:
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - POSTGRES_USER=${POSTGRES_USER}
     volumes:
       - db-data:/var/lib/postgresql/data/:rw
