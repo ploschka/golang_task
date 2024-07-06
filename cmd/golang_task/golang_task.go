@@ -1,7 +1,16 @@
 package main
 
-import "fmt"
+import (
+	"net/http"
+
+	log "github.com/ploschka/golang_task/internal/logger"
+	sw "github.com/ploschka/golang_task/internal/swagger"
+)
 
 func main() {
-	fmt.Println("Hello,World!")
+	log.Info("Server started")
+
+	router := sw.NewRouter()
+
+	log.Error(http.ListenAndServe(":88", router))
 }
