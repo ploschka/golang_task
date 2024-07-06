@@ -6,16 +6,8 @@ paths:
   /info:
     get:
       parameters:
-        - name: passportSerie
-          in: query
-          required: true
-          schema:
-            type: integer
-        - name: passportNumber
-          in: query
-          required: true
-          schema:
-            type: integer
+        - $ref: "#/components/parameters/PassSerie"
+        - $ref: "#/components/parameters/PassNum"
       responses:
         '200':
           description: Ok
@@ -49,18 +41,8 @@ paths:
           description: OK
     delete:
       parameters:
-        - name: passSerie
-          in: query
-          required: true
-          schema:
-            type: integer
-            example: 1234
-        - name: passNum
-          in: query
-          required: true
-          schema:
-            type: integer
-            example: 567890
+        - $ref: "#/components/parameters/PassSerie"
+        - $ref: "#/components/parameters/PassNum"
       responses:
         '400':
           description: Bad Request
@@ -122,21 +104,8 @@ paths:
                 $ref: "#/components/schemas/PeopleArr"
   /time/start:
     post:
-      parameters:
-        - name: user_id
-          in: query
-          required: true
-          schema:
-            type: integer
-            example: 1
-            minimum: 0
-        - name: task_id
-          in: query
-          required: true
-          schema:
-            type: integer
-            example: 1
-            minimum: 0
+      requestBody:
+        $ref: "#/components/requestBodies/UserTime"
       responses:
         '400':
           description: Bad Request
@@ -146,21 +115,8 @@ paths:
           description: OK
   /time/end:
     post:
-      parameters:
-        - name: user_id
-          in: query
-          required: true
-          schema:
-            type: integer
-            example: 1
-            minimum: 0
-        - name: task_id
-          in: query
-          required: true
-          schema:
-            type: integer
-            example: 1
-            minimum: 0
+      requestBody:
+        $ref: "#/components/requestBodies/UserTime"
       responses:
         '400':
           description: Bad Request
@@ -171,13 +127,8 @@ paths:
   /time:
     get:
       parameters:
-        - name: user_id
-          in: query
-          required: true
-          schema:
-            type: integer
-            example: 1
-            minimum: 0
+        - $ref: "#/components/parameters/PassSerie"
+        - $ref: "#/components/parameters/PassNum"
       responses:
         '400':
           description: Bad Request
@@ -188,8 +139,23 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UserTime"
+                $ref: "#/components/schemas/TaskArr"
 components:
+  parameters:
+    PassSerie:
+        name: PassSerie
+        in: query
+        schema:
+          type: integer
+          example: 1234
+        required: true
+    PassNum:
+      name: PassNum
+      in: query
+      schema:
+        type: integer
+        example: 567890
+      required: true
   schemas:
     PassportSerie:
       type: object
@@ -226,6 +192,11 @@ components:
         - passSerie
         - passNumber
       properties:
+        passport:
+          $ref: "#/components/schemas/Passport"
+    Passport:
+      type: object
+      properties:
         passSerie:
           type: integer
           example: 1234
@@ -236,7 +207,7 @@ components:
       type: array
       items:
         $ref: "#/components/schemas/PeopleWithNumber"
-    UserTime:
+    Time:
       type: object
       properties:
         hours:
@@ -246,7 +217,31 @@ components:
         minutes:
           type: integer
           example: 10
-          minimum: 0    
+          minimum: 0
+    Task:
+      type: object
+      properties:
+        time:
+          $ref: "#/components/schemas/Time"
+        task_id:
+          type: integer
+          example: 1
+        task_desc:
+          type: string
+          example: "Описать API используя swagger"
+    TaskArr:
+      type: array
+      items:
+        $ref: "#/components/schemas/Task"
+    UserTime:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/PassportSerie"
+      properties:
+        task_id:
+          type: integer
+          example: 1
+          minimum: 0
   requestBodies:
     Passport:
       content:
@@ -258,3 +253,13 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/PeopleWithNumber"
+    UserTime:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UserTime"
+    TaskArr:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/TaskArr"
