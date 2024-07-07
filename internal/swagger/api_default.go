@@ -213,6 +213,55 @@ func InfoPost(w http.ResponseWriter, r *http.Request) {
 
 func InfoPut(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		server.BadRequest(w, errors.Join(server.ErrBodyRead, err))
+		return
+	}
+
+	user := PeopleWithNumber{}
+	err = json.Unmarshal(body, &user)
+	if err != nil {
+		server.BadRequest(w, errors.Join(server.ErrJson, err))
+		return
+	}
+	log.Debug(user, user.Passport)
+
+	query_user := m.User{}
+	query_user.PassSerie = uint32(user.Passport.PassSerie)
+	query_user.PassNumber = uint32(user.Passport.PassNum)
+
+	log.Debug(query_user)
+
+	db := m.GetDB()
+	q1 := func(tx *gorm.DB) *gorm.DB {
+		return tx.Where(&query_user).First(&query_user)
+	}
+	q2 := func(tx *gorm.DB) *gorm.DB {
+		return tx.Save(&query_user)
+	}
+	log.Debug(db.ToSQL(q1))
+
+	result := q1(db)
+	if result.Error != nil {
+		server.BadRequest(w, errors.Join(server.ErrDatabase, result.Error))
+		return
+	}
+	log.Debug(query_user)
+
+	query_user.Address = user.Address
+	query_user.Name = user.Name
+	query_user.Surname = user.Surname
+	query_user.Patronimic = user.Patronymic
+
+	log.Debug(db.ToSQL(q2))
+
+	result = q2(db)
+	if result.Error != nil {
+		server.InternalError(w, errors.Join(server.ErrDatabase, result.Error))
+		return
+	}
+
 	server.OK(w)
 }
 
