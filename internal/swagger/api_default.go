@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	log "github.com/ploschka/golang_task/internal/logger"
 	m "github.com/ploschka/golang_task/internal/model"
@@ -267,6 +268,73 @@ func InfoPut(w http.ResponseWriter, r *http.Request) {
 
 func TimeEndPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		server.BadRequest(w, errors.Join(server.ErrBodyRead, err))
+		return
+	}
+
+	usertime := UserTime{}
+	err = json.Unmarshal(body, &usertime)
+	if err != nil {
+		server.BadRequest(w, errors.Join(server.ErrJson, err))
+		return
+	}
+	log.Debug(usertime, usertime.Passport)
+
+	query_user := m.User{}
+	query_user.PassSerie = uint32(usertime.Passport.PassSerie)
+	query_user.PassNumber = uint32(usertime.Passport.PassNum)
+	log.Debug(query_user)
+
+	task := m.Task{}
+	task.Id = uint(usertime.TaskId)
+
+	db := m.GetDB()
+	q1 := func(tx *gorm.DB) *gorm.DB {
+		return tx.Where(&query_user).First(&query_user)
+	}
+	q2 := func(tx *gorm.DB) *gorm.DB {
+		return tx.First(&task)
+	}
+	q3 := func(tx *gorm.DB) *gorm.DB {
+		return tx.Save(&task)
+	}
+	log.Debug(db.ToSQL(q1))
+
+	result := q1(db)
+	if result.Error != nil {
+		server.BadRequest(w, errors.Join(server.ErrDatabase, result.Error))
+		return
+	}
+	log.Debug(query_user)
+
+	log.Debug(db.ToSQL(q2))
+	result = q2(db)
+	if result.Error != nil {
+		server.BadRequest(w, errors.Join(server.ErrDatabase, result.Error))
+		return
+	}
+	log.Debug(task)
+
+	if task.TimeStart == nil {
+		server.BadRequest(w, errors.Join(server.ErrUnstartedTask))
+	}
+	if task.UserId != query_user.Id {
+		server.BadRequest(w, errors.Join(server.ErrIncorrectUser))
+	}
+
+	currtime := time.Now()
+
+	task.TimeEnd = &currtime
+
+	log.Debug(db.ToSQL(q3))
+
+	result = q3(db)
+	if result.Error != nil {
+		server.BadRequest(w, errors.Join(server.ErrDatabase, result.Error))
+		return
+	}
 	server.OK(w)
 }
 
@@ -277,5 +345,67 @@ func TimeGet(w http.ResponseWriter, r *http.Request) {
 
 func TimeStartPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		server.BadRequest(w, errors.Join(server.ErrBodyRead, err))
+		return
+	}
+
+	usertime := UserTime{}
+	err = json.Unmarshal(body, &usertime)
+	if err != nil {
+		server.BadRequest(w, errors.Join(server.ErrJson, err))
+		return
+	}
+	log.Debug(usertime, usertime.Passport)
+
+	query_user := m.User{}
+	query_user.PassSerie = uint32(usertime.Passport.PassSerie)
+	query_user.PassNumber = uint32(usertime.Passport.PassNum)
+	log.Debug(query_user)
+
+	task := m.Task{}
+	task.Id = uint(usertime.TaskId)
+
+	db := m.GetDB()
+	q1 := func(tx *gorm.DB) *gorm.DB {
+		return tx.Where(&query_user).First(&query_user)
+	}
+	q2 := func(tx *gorm.DB) *gorm.DB {
+		return tx.First(&task)
+	}
+	q3 := func(tx *gorm.DB) *gorm.DB {
+		return tx.Save(&task)
+	}
+	log.Debug(db.ToSQL(q1))
+
+	result := q1(db)
+	if result.Error != nil {
+		server.BadRequest(w, errors.Join(server.ErrDatabase, result.Error))
+		return
+	}
+	log.Debug(query_user)
+
+	log.Debug(db.ToSQL(q2))
+	result = q2(db)
+	if result.Error != nil {
+		server.BadRequest(w, errors.Join(server.ErrDatabase, result.Error))
+		return
+	}
+	log.Debug(task)
+
+	currtime := time.Now()
+
+	task.TimeStart = &currtime
+	task.TimeEnd = nil
+	task.UserId = query_user.Id
+
+	log.Debug(db.ToSQL(q3))
+
+	result = q3(db)
+	if result.Error != nil {
+		server.BadRequest(w, errors.Join(server.ErrDatabase, result.Error))
+		return
+	}
 	server.OK(w)
 }

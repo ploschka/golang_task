@@ -23,8 +23,8 @@ type User struct {
 type Task struct {
 	Id        uint `gorm:"primarykey;autoIncrement:true"`
 	Desc      string
-	TimeStart time.Time
-	TimeEnd   time.Time
+	TimeStart *time.Time
+	TimeEnd   *time.Time
 	UserId    uint
 }
 

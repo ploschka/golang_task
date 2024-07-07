@@ -14,6 +14,8 @@ var ErrInvalidLen error = errors.New("INVALID len")
 var ErrJson error = errors.New("JSON ERROR")
 var ErrDatabase error = errors.New("DATABASE ERROR")
 var ErrBodyRead error = errors.New("REQUEST BODY READ ERROR")
+var ErrUnstartedTask error = errors.New("TASK HASN'T BEEN STARTED")
+var ErrIncorrectUser error = errors.New("TASK STARTED BY ANOTHER USER")
 
 func InternalError(w http.ResponseWriter, err error) {
 	w.WriteHeader(http.StatusInternalServerError)
