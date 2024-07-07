@@ -12,7 +12,9 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"math"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -340,7 +342,99 @@ func TimeEndPost(w http.ResponseWriter, r *http.Request) {
 
 func TimeGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	serie := r.URL.Query().Get("PassSerie")
+	number := r.URL.Query().Get("PassNum")
+
+	log.Debug(serie, number)
+
+	if len(serie) != 4 {
+		server.BadRequest(w, server.ErrInvalidPassSerie)
+		return
+	}
+
+	if len(number) != 6 {
+		server.BadRequest(w, server.ErrInvalidPassNum)
+		return
+	}
+
+	serie_int, err := strconv.ParseUint(serie, 10, 32)
+	if err != nil {
+		server.BadRequest(w, errors.Join(server.ErrInvalidPassSerie, err))
+		return
+	}
+
+	number_int, err := strconv.ParseUint(number, 10, 32)
+	if err != nil {
+		server.BadRequest(w, errors.Join(server.ErrInvalidPassNum, err))
+		return
+	}
+
+	user := m.User{PassSerie: uint32(serie_int), PassNumber: uint32(number_int)}
+
+	db := m.GetDB()
+	q := func(tx *gorm.DB) *gorm.DB {
+		return tx.Where(&user).Preload("Tasks").First(&user)
+	}
+	log.Debug(db.ToSQL(q))
+
+	result := q(db)
+	if result.Error != nil {
+		server.BadRequest(w, errors.Join(server.ErrDatabase, result.Error))
+		return
+	}
+	log.Debug(user)
+
+	ret_times := []Task{}
+
+	for _, t := range user.Tasks {
+		var hours, minutes int64
+		if t.TimeEnd == nil || t.TimeStart == nil {
+			continue
+		} else {
+			duration := t.TimeEnd.Sub(*t.TimeStart)
+
+			hh := duration.Hours()
+			hours = int64(math.Floor(hh))
+
+			duration -= time.Duration(hours * int64(time.Hour))
+
+			mm := duration.Minutes()
+			minutes = int64(math.Floor(mm))
+		}
+		ret_times = append(ret_times, Task{
+			TaskId:   int32(t.Id),
+			TaskDesc: t.Desc,
+			Time: &Time{
+				Hours:   int32(hours),
+				Minutes: int32(minutes),
+			},
+		})
+	}
+
+	slices.SortFunc(ret_times, func(i, j Task) int {
+		if i.Time.Hours < j.Time.Hours {
+			return 1
+		}
+		if i.Time.Hours > j.Time.Hours {
+			return -1
+		}
+		if i.Time.Minutes < j.Time.Minutes {
+			return 1
+		}
+		if i.Time.Minutes > j.Time.Minutes {
+			return -1
+		}
+		return 0
+	})
+
+	str, err := json.Marshal(ret_times)
+	if err != nil {
+		server.InternalError(w, errors.Join(server.ErrJson, err))
+		return
+	}
 	server.OK(w)
+	w.Write(str)
 }
 
 func TimeStartPost(w http.ResponseWriter, r *http.Request) {
