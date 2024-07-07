@@ -10,19 +10,22 @@ import (
 )
 
 type User struct {
-	PassSerie  uint32 `gorm:"primarykey;autoIncrement:false"`
-	PassNumber uint32 `gorm:"primarykey;autoIncrement:false"`
+	Id         uint   `gorm:"primarykey;autoIncrement:true"`
+	PassSerie  uint32 `gorm:"uniqueIndex:pass"`
+	PassNumber uint32 `gorm:"uniqueIndex:pass"`
 	Name       string
 	Surname    string
 	Patronimic string
 	Address    string
+	Tasks      []Task `gorm:"foreignKey:UserId"`
 }
 
 type Task struct {
-	Id        uint `gorm:"primarykey"`
+	Id        uint `gorm:"primarykey;autoIncrement:true"`
 	Desc      string
 	TimeStart time.Time
 	TimeEnd   time.Time
+	UserId    uint
 }
 
 var db *gorm.DB
