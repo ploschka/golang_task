@@ -61,8 +61,8 @@ func InfoDelete(w http.ResponseWriter, r *http.Request) {
 	q := func(tx *gorm.DB) *gorm.DB {
 		return tx.Where(&user).Delete(&user)
 	}
-	log.Debug(db.ToSQL(q))
 
+	log.Debug(db.ToSQL(q))
 	result := q(db)
 	if result.Error != nil {
 		server.BadRequest(w, errors.Join(server.ErrDatabase, result.Error))
@@ -108,8 +108,8 @@ func InfoGet(w http.ResponseWriter, r *http.Request) {
 	q := func(tx *gorm.DB) *gorm.DB {
 		return tx.Where(&user).First(&user)
 	}
-	log.Debug(db.ToSQL(q))
 
+	log.Debug(db.ToSQL(q))
 	result := q(db)
 	if result.Error != nil {
 		server.BadRequest(w, errors.Join(server.ErrDatabase, result.Error))
@@ -134,11 +134,6 @@ func InfoGet(w http.ResponseWriter, r *http.Request) {
 
 func InfoListGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	// body, err := io.ReadAll(r.Body)
-	// if err != nil {
-	// 	server.InternalError(w, errors.Join(server.ErrBodyRead, err))
-	// 	return
-	// }
 	user_query := People{}
 
 	user_query.Name = r.URL.Query().Get("name")
@@ -165,8 +160,8 @@ func InfoListGet(w http.ResponseWriter, r *http.Request) {
 	q := func(tx *gorm.DB) *gorm.DB {
 		return tx.Where(&user_query).Limit(int(length)).Offset(int((page - 1) * length)).Find(&users)
 	}
-	log.Debug(db.ToSQL(q))
 
+	log.Debug(db.ToSQL(q))
 	result := q(db)
 	if result.Error != nil {
 		server.BadRequest(w, errors.Join(server.ErrDatabase, result.Error))
@@ -246,8 +241,8 @@ func InfoPost(w http.ResponseWriter, r *http.Request) {
 	q := func(tx *gorm.DB) *gorm.DB {
 		return tx.Create(&user)
 	}
-	log.Debug(db.ToSQL(q))
 
+	log.Debug(db.ToSQL(q))
 	result := q(db)
 	if result.Error != nil {
 		server.BadRequest(w, errors.Join(server.ErrDatabase, result.Error))
@@ -276,8 +271,6 @@ func InfoPut(w http.ResponseWriter, r *http.Request) {
 	query_user.PassSerie = uint32(user.Passport.PassSerie)
 	query_user.PassNumber = uint32(user.Passport.PassNum)
 
-	log.Debug(query_user)
-
 	db := m.GetDB()
 	q1 := func(tx *gorm.DB) *gorm.DB {
 		return tx.Where(&query_user).First(&query_user)
@@ -285,8 +278,8 @@ func InfoPut(w http.ResponseWriter, r *http.Request) {
 	q2 := func(tx *gorm.DB) *gorm.DB {
 		return tx.Save(&query_user)
 	}
-	log.Debug(db.ToSQL(q1))
 
+	log.Debug(db.ToSQL(q1))
 	result := q1(db)
 	if result.Error != nil {
 		server.BadRequest(w, errors.Join(server.ErrDatabase, result.Error))
@@ -300,7 +293,6 @@ func InfoPut(w http.ResponseWriter, r *http.Request) {
 	query_user.Patronimic = user.Patronymic
 
 	log.Debug(db.ToSQL(q2))
-
 	result = q2(db)
 	if result.Error != nil {
 		server.InternalError(w, errors.Join(server.ErrDatabase, result.Error))
@@ -329,7 +321,6 @@ func TimeEndPost(w http.ResponseWriter, r *http.Request) {
 	query_user := m.User{}
 	query_user.PassSerie = uint32(usertime.Passport.PassSerie)
 	query_user.PassNumber = uint32(usertime.Passport.PassNum)
-	log.Debug(query_user)
 
 	task := m.Task{}
 	task.Id = uint(usertime.TaskId)
@@ -344,8 +335,8 @@ func TimeEndPost(w http.ResponseWriter, r *http.Request) {
 	q3 := func(tx *gorm.DB) *gorm.DB {
 		return tx.Save(&task)
 	}
-	log.Debug(db.ToSQL(q1))
 
+	log.Debug(db.ToSQL(q1))
 	result := q1(db)
 	if result.Error != nil {
 		server.BadRequest(w, errors.Join(server.ErrDatabase, result.Error))
@@ -373,7 +364,6 @@ func TimeEndPost(w http.ResponseWriter, r *http.Request) {
 	task.TimeEnd = &currtime
 
 	log.Debug(db.ToSQL(q3))
-
 	result = q3(db)
 	if result.Error != nil {
 		server.BadRequest(w, errors.Join(server.ErrDatabase, result.Error))
@@ -418,8 +408,8 @@ func TimeGet(w http.ResponseWriter, r *http.Request) {
 	q := func(tx *gorm.DB) *gorm.DB {
 		return tx.Where(&user).Preload("Tasks").First(&user)
 	}
-	log.Debug(db.ToSQL(q))
 
+	log.Debug(db.ToSQL(q))
 	result := q(db)
 	if result.Error != nil {
 		server.BadRequest(w, errors.Join(server.ErrDatabase, result.Error))
@@ -498,7 +488,6 @@ func TimeStartPost(w http.ResponseWriter, r *http.Request) {
 	query_user := m.User{}
 	query_user.PassSerie = uint32(usertime.Passport.PassSerie)
 	query_user.PassNumber = uint32(usertime.Passport.PassNum)
-	log.Debug(query_user)
 
 	task := m.Task{}
 	task.Id = uint(usertime.TaskId)
@@ -513,8 +502,8 @@ func TimeStartPost(w http.ResponseWriter, r *http.Request) {
 	q3 := func(tx *gorm.DB) *gorm.DB {
 		return tx.Save(&task)
 	}
-	log.Debug(db.ToSQL(q1))
 
+	log.Debug(db.ToSQL(q1))
 	result := q1(db)
 	if result.Error != nil {
 		server.BadRequest(w, errors.Join(server.ErrDatabase, result.Error))
@@ -537,7 +526,6 @@ func TimeStartPost(w http.ResponseWriter, r *http.Request) {
 	task.UserId = query_user.Id
 
 	log.Debug(db.ToSQL(q3))
-
 	result = q3(db)
 	if result.Error != nil {
 		server.BadRequest(w, errors.Join(server.ErrDatabase, result.Error))
