@@ -62,7 +62,7 @@ func InfoGet(w http.ResponseWriter, r *http.Request) {
 
 	db := m.GetDB()
 	q := func(tx *gorm.DB) *gorm.DB {
-		return tx.First(&user)
+		return tx.Where(&user).First(&user)
 	}
 	log.Debug(db.ToSQL(q))
 
