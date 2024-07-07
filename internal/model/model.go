@@ -17,7 +17,7 @@ type User struct {
 	Surname    string
 	Patronimic string
 	Address    string
-	Tasks      []Task `gorm:"foreignKey:UserId"`
+	Tasks      []Task `gorm:"foreignKey:UserId;constraint:OnDelete:SET NULL;"`
 }
 
 type Task struct {

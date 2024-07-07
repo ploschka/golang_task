@@ -27,7 +27,49 @@ import (
 
 func InfoDelete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
+	serie := r.URL.Query().Get("PassSerie")
+	number := r.URL.Query().Get("PassNum")
+
+	log.Debug(serie, number)
+
+	if len(serie) != 4 {
+		server.BadRequest(w, server.ErrInvalidPassSerie)
+		return
+	}
+
+	if len(number) != 6 {
+		server.BadRequest(w, server.ErrInvalidPassNum)
+		return
+	}
+
+	serie_int, err := strconv.ParseUint(serie, 10, 32)
+	if err != nil {
+		server.BadRequest(w, errors.Join(server.ErrInvalidPassSerie, err))
+		return
+	}
+
+	number_int, err := strconv.ParseUint(number, 10, 32)
+	if err != nil {
+		server.BadRequest(w, errors.Join(server.ErrInvalidPassNum, err))
+		return
+	}
+
+	user := m.User{PassSerie: uint32(serie_int), PassNumber: uint32(number_int)}
+
+	db := m.GetDB()
+	q := func(tx *gorm.DB) *gorm.DB {
+		return tx.Where(&user).Delete(&user)
+	}
+	log.Debug(db.ToSQL(q))
+
+	result := q(db)
+	if result.Error != nil {
+		server.BadRequest(w, errors.Join(server.ErrDatabase, result.Error))
+		return
+	}
+
+	server.OK(w)
 }
 
 func InfoGet(w http.ResponseWriter, r *http.Request) {
