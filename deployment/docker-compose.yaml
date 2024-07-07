@@ -34,7 +34,7 @@ services:
       - 5432:5432
     healthcheck:
       test: ["CMD", "pg_isready" ,"-h", "localhost"]
-      timeout: 20s
+      timeout: 5s
       retries: 10
 
 networks:
