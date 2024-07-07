@@ -235,9 +235,9 @@ components:
         $ref: "#/components/schemas/Task"
     UserTime:
       type: object
-      allOf:
-        - $ref: "#/components/schemas/PassportSerie"
       properties:
+        passport:
+          $ref: "#/components/schemas/Passport"
         task_id:
           type: integer
           example: 1

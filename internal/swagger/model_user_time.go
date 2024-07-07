@@ -9,7 +9,7 @@
 package swagger
 
 type UserTime struct {
-	PassportNumber string `json:"passportNumber"`
+	Passport *Passport `json:"passport,omitempty"`
 
 	TaskId int32 `json:"task_id,omitempty"`
 }
