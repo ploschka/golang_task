@@ -13,7 +13,7 @@ services:
     networks:
       - app-network
     ports:
-      - 88:88
+      - ${APP_PORT}:88
     depends_on:
       database:
         condition: service_healthy
@@ -31,9 +31,10 @@ services:
     networks:
       - app-network
     ports:
-      - 5432:5432
+      - ${DB_PORT}:5432
     healthcheck:
       test: ["CMD", "pg_isready" ,"-h", "localhost"]
+      interval: 1m
       timeout: 5s
       retries: 10
 
